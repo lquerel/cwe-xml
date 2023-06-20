@@ -1,5 +1,5 @@
 use serde::Deserialize;
-use crate::structured_text::StructuredText;
+use crate::structured_text::{StructuredCode, StructuredText};
 use crate::content_history::ContentHistory;
 use crate::notes::Notes;
 
@@ -218,7 +218,7 @@ pub enum DemonstrativeExampleChild {
     #[serde(rename = "Body_Text")]
     BodyText(StructuredText),
     #[serde(rename = "Example_Code")]
-    ExampleCode, // ToDo (StructuredCode), <-- doesn't work, quick-xml limit?
+    ExampleCode(StructuredCode),
     #[serde(rename = "References")]
     References {
         #[serde(rename = "$value")]
@@ -355,8 +355,8 @@ pub struct Introduction {
 #[derive(Debug, Deserialize)]
 #[serde(deny_unknown_fields)]
 pub struct BackgroundDetails {
-    #[serde(rename = "$value")]
-    pub background_details: StructuredText,
+    #[serde(rename = "$value",default)]
+    pub background_details: Vec<StructuredText>,
 }
 
 #[derive(Debug, Deserialize)]

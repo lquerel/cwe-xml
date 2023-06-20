@@ -23,47 +23,52 @@ pub struct StructuredText {
 pub enum StructuredTextType {
     #[serde(rename = "p")]
     P {
-        #[serde(rename = "$value")]
+        #[serde(rename = "$value", default)]
         children: Vec<Box<StructuredTextType>>,
     },
     #[serde(rename = "b")]
     XhtmlB {
-        #[serde(rename = "$value")]
+        #[serde(rename = "$value", default)]
         children: Vec<Box<StructuredTextType>>,
     },
     #[serde(rename = "ol")]
     XhtmlOl {
-        #[serde(rename = "$value")]
+        #[serde(rename = "$value", default)]
         children: Vec<Box<StructuredTextType>>,
     },
     #[serde(rename = "li")]
     XhtmlLi {
-        #[serde(rename = "$value")]
+        #[serde(rename = "$value", default)]
         children: Vec<Box<StructuredTextType>>,
     },
     #[serde(rename = "ul")]
     XhtmlUl {
-        #[serde(rename = "$value")]
+        #[serde(rename = "$value", default)]
+        children: Vec<Box<StructuredTextType>>,
+    },
+    #[serde(rename = "tbody")]
+    XhtmlTBody {
+        #[serde(rename = "$value", default)]
         children: Vec<Box<StructuredTextType>>,
     },
     #[serde(rename = "table")]
     XhtmlTable {
-        #[serde(rename = "$value")]
+        #[serde(rename = "$value", default)]
         children: Vec<Box<StructuredTextType>>,
     },
     #[serde(rename = "tr")]
     XhtmlTr {
-        #[serde(rename = "$value")]
+        #[serde(rename = "$value", default)]
         children: Vec<Box<StructuredTextType>>,
     },
     #[serde(rename = "th")]
     XhtmlTh {
-        #[serde(rename = "$value")]
+        #[serde(rename = "$value", default)]
         children: Vec<Box<StructuredTextType>>,
     },
     #[serde(rename = "td")]
     XhtmlTd {
-        #[serde(rename = "$value")]
+        #[serde(rename = "$value", default)]
         children: Vec<Box<StructuredTextType>>,
     },
     #[serde(rename = "img")]
@@ -77,7 +82,7 @@ pub enum StructuredTextType {
     XhtmlDiv {
         #[serde(rename = "@style")]
         style: Option<String>,
-        #[serde(rename = "$value")]
+        #[serde(rename = "$value", default)]
         children: Vec<Box<StructuredTextType>>,
     },
     #[serde(rename = "br")]
@@ -88,5 +93,5 @@ pub enum StructuredTextType {
         text: String,
     },
     #[serde(rename = "$text")]
-    String(String),
+    Text(String),
 }

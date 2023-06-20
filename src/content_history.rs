@@ -29,7 +29,7 @@ pub enum ContentHistoryChild {
 #[serde(deny_unknown_fields)]
 pub struct Submission {
     #[serde(rename = "Submission_Name")]
-    pub submission_name: String,
+    pub submission_name: Option<String>,
     #[serde(rename = "Submission_Organization")]
     pub submission_organization: Option<String>,
     #[serde(rename = "Submission_Date")]
