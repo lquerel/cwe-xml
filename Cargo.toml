@@ -1,6 +1,6 @@
 [package]
 name = "cwe-xml"
-version = "0.1.0"
+version = "0.1.1"
 authors = ["Laurent Querel <laurent.querel@gmail.com>"]
 edition = "2021"
 license = "Apache-2.0"
@@ -13,7 +13,7 @@ documentation = "https://docs.rs/cwe-xml"
 readme = "README.md"
 exclude = ["/.github/*"]
 keywords = ["cwe", "security", "mitre", "vulnerability", "weakness"]
-categories = ["parser implementations"]
+categories = ["parser-implementations"]
 
 [dependencies]
 quick-xml = { version = "0.29.0", features = ["serialize"] }
