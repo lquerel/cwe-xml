@@ -1,7 +1,19 @@
 [package]
 name = "cwe-xml"
 version = "0.1.0"
+authors = ["Laurent Querel <laurent.querel@gmail.com>"]
 edition = "2021"
+license = "Apache-2.0"
+description = """
+Rust mapping to CWE XML files from the MITRE project.
+"""
+homepage = "https://github.com/lquerel/cwe-xml"
+repository = "https://github.com/lquerel/cwe-xml"
+documentation = "https://docs.rs/cwe-xml"
+readme = "README.md"
+exclude = ["/.github/*"]
+keywords = ["cwe", "security", "mitre", "vulnerability", "weakness"]
+categories = ["parser implementations"]
 
 [dependencies]
 quick-xml = { version = "0.29.0", features = ["serialize"] }

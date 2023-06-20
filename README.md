@@ -2,6 +2,8 @@
 
 This crate provides a Rust mapping to CWE XML files from the [MITRE](https://cve.mitre.org/) project.
 
+CWE stands for Common Weakness Enumeration.
+
 XML files are available [here](https://cwe.mitre.org/data/downloads.html).
 
 ## Status
