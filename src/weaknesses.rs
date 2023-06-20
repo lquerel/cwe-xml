@@ -1,5 +1,7 @@
 use serde::Deserialize;
-use crate::{AffectedResources, AlternateTerms, ApplicablePlatforms, BackgroundDetails, CommonConsequences, ContentHistory, DemonstrativeExamples, DetectionMethods, ExploitationFactors, FunctionalAreas, ModesOfIntroduction, Notes, ObservedExamples, PotentialMitigations, References, RelatedAttackPatterns, RelatedWeaknesses, StructuredText, TaxonomyMappings, WeaknessOrdinalities};
+use crate::structured_text::StructuredText;
+use crate::content_history::ContentHistory;
+use crate::notes::Notes;
 
 #[derive(Debug, Deserialize)]
 #[serde(deny_unknown_fields)]
@@ -66,4 +68,343 @@ pub struct Weakness {
     pub taxonomy_mappings: Option<TaxonomyMappings>,
     #[serde(rename = "Notes")]
     pub notes: Option<Notes>,
+}
+
+#[derive(Debug, Deserialize)]
+#[serde(deny_unknown_fields)]
+pub struct WeaknessOrdinalities {
+    #[serde(rename = "$value")]
+    pub weakness_ordinalities: Vec<WeaknessOrdinality>,
+}
+
+#[derive(Debug, Deserialize)]
+#[serde(deny_unknown_fields)]
+pub struct WeaknessOrdinality {
+    #[serde(rename = "Ordinality")]
+    pub ordinality: Option<String>,
+    #[serde(rename = "Description")]
+    pub description: Option<String>,
+}
+
+#[derive(Debug, Deserialize)]
+#[serde(rename = "Related_Weaknesses")]
+#[serde(deny_unknown_fields)]
+pub struct RelatedWeaknesses {
+    #[serde(rename = "Related_Weakness", default)]
+    pub related_weaknesses: Vec<RelatedWeakness>,
+}
+
+#[derive(Debug, Deserialize)]
+#[serde(rename = "Related_Weakness")]
+#[serde(deny_unknown_fields)]
+pub struct RelatedWeakness {
+    #[serde(rename = "@Nature")]
+    pub nature: String,
+    #[serde(rename = "@CWE_ID")]
+    pub cwe_id: String,
+    #[serde(rename = "@View_ID")]
+    pub view_id: String,
+    #[serde(rename = "@Chain_ID")]
+    pub chain_id: Option<String>,
+    #[serde(rename = "@Ordinal")]
+    pub ordinal: Option<String>,
+}
+
+#[derive(Debug, Deserialize)]
+#[serde(deny_unknown_fields)]
+pub struct TaxonomyMappings {
+    #[serde(rename = "$value")]
+    pub taxonomy_mappings: Vec<TaxonomyMapping>,
+}
+
+#[derive(Debug, Deserialize)]
+#[serde(deny_unknown_fields)]
+pub struct TaxonomyMapping {
+    #[serde(rename = "@Taxonomy_Name")]
+    pub taxonomy_name: String,
+    #[serde(rename = "Entry_ID")]
+    pub entry_id: Option<String>,
+    #[serde(rename = "Entry_Name")]
+    pub entry_name: Option<String>,
+    #[serde(rename = "Mapping_Fit")]
+    pub mapping_fit: Option<String>,
+}
+
+#[derive(Debug, Deserialize)]
+#[serde(deny_unknown_fields)]
+pub struct FunctionalAreas {
+    #[serde(rename = "$value")]
+    pub functional_areas: Vec<String>,
+}
+
+#[derive(Debug, Deserialize)]
+#[serde(deny_unknown_fields)]
+pub struct AffectedResources {
+    #[serde(rename = "$value")]
+    pub affected_resources: Vec<String>,
+}
+
+#[derive(Debug, Deserialize)]
+#[serde(deny_unknown_fields)]
+pub struct References {
+    #[serde(rename = "$value")]
+    pub references: Vec<Reference>,
+}
+
+#[derive(Debug, Deserialize)]
+#[serde(deny_unknown_fields)]
+pub struct Reference {
+    #[serde(rename = "@External_Reference_ID")]
+    pub external_reference_id: String,
+    #[serde(rename = "@Section")]
+    pub section: Option<String>,
+}
+
+#[derive(Debug, Deserialize)]
+#[serde(deny_unknown_fields)]
+pub struct RelatedAttackPatterns {
+    #[serde(rename = "$value")]
+    pub related_attack_patterns: Vec<RelatedAttackPattern>,
+}
+
+#[derive(Debug, Deserialize)]
+#[serde(deny_unknown_fields)]
+pub struct RelatedAttackPattern {
+    #[serde(rename = "@CAPEC_ID")]
+    pub caped_id: String,
+}
+
+#[derive(Debug, Deserialize)]
+#[serde(deny_unknown_fields)]
+pub struct ObservedExamples {
+    #[serde(rename = "$value")]
+    pub observed_examples: Vec<ObservedExample>,
+}
+
+#[derive(Debug, Deserialize)]
+#[serde(deny_unknown_fields)]
+pub struct ObservedExample {
+    #[serde(rename = "Reference")]
+    pub reference: String,
+    #[serde(rename = "Description")]
+    pub description: String,
+    #[serde(rename = "Link")]
+    pub link: String,
+}
+
+#[derive(Debug, Deserialize)]
+#[serde(deny_unknown_fields)]
+pub struct DemonstrativeExamples {
+    #[serde(rename = "Demonstrative_Example")]
+    pub examples: Vec<DemonstrativeExample>,
+}
+
+#[derive(Debug, Deserialize)]
+#[serde(deny_unknown_fields)]
+pub struct DemonstrativeExample {
+    #[serde(rename = "@Demonstrative_Example_ID")]
+    pub demonstrative_example_id: Option<String>,
+    #[serde(rename = "$value")]
+    pub children: Vec<DemonstrativeExampleChild>,
+}
+
+#[derive(Debug, Deserialize)]
+#[serde(deny_unknown_fields)]
+pub enum DemonstrativeExampleChild {
+    #[serde(rename = "Title_Text")]
+    TitleText(String),
+    #[serde(rename = "Intro_Text")]
+    IntroText(StructuredText),
+    #[serde(rename = "Body_Text")]
+    BodyText(StructuredText),
+    #[serde(rename = "Example_Code")]
+    ExampleCode, // ToDo (StructuredCode), <-- doesn't work, quick-xml limit?
+    #[serde(rename = "References")]
+    References {
+        #[serde(rename = "$value")]
+        children: Vec<Reference>,
+    },
+}
+
+#[derive(Debug, Deserialize)]
+#[serde(deny_unknown_fields)]
+pub struct PotentialMitigations {
+    #[serde(rename = "$value")]
+    pub potential_mitigations: Vec<PotentialMitigation>,
+}
+
+#[derive(Debug, Deserialize)]
+#[serde(deny_unknown_fields)]
+pub struct PotentialMitigation {
+    #[serde(rename = "@Mitigation_ID")]
+    pub mitigation_id: Option<String>,
+    #[serde(rename = "$value")]
+    pub children: Vec<PotentialMitigationChild>,
+}
+
+#[derive(Debug, Deserialize)]
+#[serde(deny_unknown_fields)]
+pub enum PotentialMitigationChild {
+    #[serde(rename = "Phase")]
+    Phase(String),
+    #[serde(rename = "Strategy")]
+    Strategy(String),
+    #[serde(rename = "Description")]
+    Description(StructuredText),
+    #[serde(rename = "Effectiveness")]
+    Effectiveness(String),
+    #[serde(rename = "Effectiveness_Notes")]
+    EffectivenessNotes(StructuredText),
+}
+
+#[derive(Debug, Deserialize)]
+#[serde(deny_unknown_fields)]
+pub struct DetectionMethods {
+    #[serde(rename = "$value")]
+    pub detection_methods: Vec<DetectionMethod>,
+}
+
+#[derive(Debug, Deserialize)]
+#[serde(deny_unknown_fields)]
+pub struct DetectionMethod {
+    #[serde(rename = "@Detection_Method_ID")]
+    pub detection_method_id: Option<String>,
+    #[serde(rename = "$value")]
+    pub children: Vec<DetectionMethodChild>,
+}
+
+#[derive(Debug, Deserialize)]
+#[serde(deny_unknown_fields)]
+pub enum DetectionMethodChild {
+    #[serde(rename = "Method")]
+    Method(String),
+    #[serde(rename = "Description")]
+    Description(StructuredText),
+    #[serde(rename = "Effectiveness")]
+    Effectiveness(String),
+    #[serde(rename = "Effectiveness_Notes")]
+    EffectivenessNotes(String),
+}
+
+#[derive(Debug, Deserialize)]
+#[serde(deny_unknown_fields)]
+pub struct CommonConsequences {
+    #[serde(rename = "$value")]
+    pub common_consequences: Vec<Consequence>,
+}
+
+#[derive(Debug, Deserialize)]
+#[serde(deny_unknown_fields)]
+pub struct Consequence {
+    #[serde(rename = "$value")]
+    pub children: Vec<ConsequenceChild>,
+}
+
+#[derive(Debug, Deserialize)]
+#[serde(deny_unknown_fields)]
+pub enum ConsequenceChild {
+    #[serde(rename = "Scope")]
+    Scope(String),
+    #[serde(rename = "Impact")]
+    Impact(String),
+    #[serde(rename = "Note")]
+    Note(String),
+    #[serde(rename = "Likelihood")]
+    Likelihood(String),
+}
+
+#[derive(Debug, Deserialize)]
+#[serde(deny_unknown_fields)]
+pub struct AlternateTerms {
+    #[serde(rename = "$value")]
+    pub alternate_terms: Vec<AlternateTerm>,
+}
+
+#[derive(Debug, Deserialize)]
+#[serde(deny_unknown_fields)]
+pub struct ExploitationFactors {
+    #[serde(rename = "$value")]
+    pub children: Vec<StructuredText>,
+}
+
+#[derive(Debug, Deserialize)]
+#[serde(deny_unknown_fields)]
+pub struct AlternateTerm {
+    #[serde(rename = "Term")]
+    pub term: String,
+    #[serde(rename = "Description")]
+    pub description: Option<StructuredText>,
+}
+
+#[derive(Debug, Deserialize)]
+#[serde(deny_unknown_fields)]
+pub struct ModesOfIntroduction {
+    #[serde(rename = "$value")]
+    pub introductions: Vec<Introduction>,
+}
+
+#[derive(Debug, Deserialize)]
+#[serde(deny_unknown_fields)]
+pub struct Introduction {
+    #[serde(rename = "Phase")]
+    pub phase: String,
+    #[serde(rename = "Note")]
+    pub note: Option<StructuredText>,
+}
+
+#[derive(Debug, Deserialize)]
+#[serde(deny_unknown_fields)]
+pub struct BackgroundDetails {
+    #[serde(rename = "$value")]
+    pub background_details: StructuredText,
+}
+
+#[derive(Debug, Deserialize)]
+#[serde(deny_unknown_fields)]
+pub struct ApplicablePlatforms {
+    #[serde(rename = "$value")]
+    pub applicable_platforms: Vec<ApplicablePlatform>,
+}
+
+#[derive(Debug, Deserialize)]
+#[serde(deny_unknown_fields)]
+pub enum ApplicablePlatform {
+    Language {
+        #[serde(rename = "@Class")]
+        class: Option<String>,
+        #[serde(rename = "@Name")]
+        name: Option<String>,
+        #[serde(rename = "@Prevalence")]
+        prevalence: String,
+    },
+    Technology {
+        #[serde(rename = "@Name")]
+        name: Option<String>,
+        #[serde(rename = "@Class")]
+        class: Option<String>,
+        #[serde(rename = "@Prevalence")]
+        prevalence: String,
+    },
+    #[serde(rename = "Operating_System")]
+    OperatingSystem {
+        #[serde(rename = "@Name")]
+        name: Option<String>,
+        #[serde(rename = "@Version")]
+        version: Option<String>,
+        #[serde(rename = "@CPE_ID")]
+        cpe_id: Option<String>,
+        #[serde(rename = "@Class")]
+        class: Option<String>,
+        #[serde(rename = "@Prevalence")]
+        prevalence: String,
+    },
+    #[serde(rename = "Architecture")]
+    Architecture {
+        #[serde(rename = "@Name")]
+        name: Option<String>,
+        #[serde(rename = "@Class")]
+        class: Option<String>,
+        #[serde(rename = "@Prevalence")]
+        prevalence: String,
+    },
 }
