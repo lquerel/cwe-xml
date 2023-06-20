@@ -1,7 +1,7 @@
 use serde::Deserialize;
-use crate::structured_text::{StructuredCode, StructuredText};
-use crate::content_history::ContentHistory;
-use crate::notes::Notes;
+use crate::cwe::content_history::ContentHistory;
+use crate::cwe::notes::Notes;
+use crate::cwe::structured_text::{StructuredCode, StructuredText};
 
 #[derive(Debug, Deserialize)]
 #[serde(deny_unknown_fields)]

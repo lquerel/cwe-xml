@@ -1,5 +1,5 @@
 use serde::Deserialize;
-use crate::relationships::Relationships;
+use crate::cwe::relationships::Relationships;
 
 #[derive(Debug, Deserialize)]
 pub struct Categories {

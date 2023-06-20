@@ -1,5 +1,5 @@
 use serde::Deserialize;
-use crate::structured_text::StructuredTextType;
+use crate::cwe::structured_text::StructuredTextType;
 
 #[derive(Debug, Deserialize)]
 #[serde(deny_unknown_fields)]
