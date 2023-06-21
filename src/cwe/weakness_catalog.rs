@@ -1,3 +1,4 @@
+use std::rc::Rc;
 use serde::Deserialize;
 use crate::cwe::categories::Categories;
 use crate::cwe::external_references::ExternalReferences;
