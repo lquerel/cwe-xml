@@ -1,17 +1,18 @@
+use std::rc::Rc;
 use serde::Deserialize;
 use crate::cwe::relationships::Relationships;
 
 #[derive(Debug, Deserialize)]
 pub struct Categories {
     #[serde(rename = "Category", default)]
-    pub categories: Vec<Category>,
+    pub categories: Vec<Rc<Category>>,
 }
 
 #[derive(Debug, Deserialize)]
 #[serde(rename = "Category")]
 pub struct Category {
     #[serde(rename = "@ID")]
-    pub id: String,
+    pub id: i64,
     #[serde(rename = "@Name")]
     pub name: String,
     #[serde(rename = "@Status")]

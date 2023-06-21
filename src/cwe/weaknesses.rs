@@ -1,14 +1,16 @@
 use std::rc::Rc;
 use serde::Deserialize;
+use crate::cwe::categories::Category;
 use crate::cwe::content_history::ContentHistory;
 use crate::cwe::notes::Notes;
 use crate::cwe::structured_text::{StructuredCode, StructuredText};
+use crate::cwe::views::View;
 
 #[derive(Debug, Deserialize)]
 #[serde(deny_unknown_fields)]
 pub struct Weaknesses {
     #[serde(rename = "Weakness", default)]
-    pub weaknesses: Vec<Weakness>,
+    pub weaknesses: Vec<Rc<Weakness>>,
 }
 
 #[derive(Debug, Deserialize)]
@@ -69,6 +71,8 @@ pub struct Weakness {
     pub taxonomy_mappings: Option<TaxonomyMappings>,
     #[serde(rename = "Notes")]
     pub notes: Option<Notes>,
+
+    pub categories: Option<Vec<Rc<Category>>>,
 }
 
 #[derive(Debug, Deserialize)]
@@ -102,11 +106,11 @@ pub struct RelatedWeakness {
     #[serde(rename = "@Nature")]
     pub nature: String,
     #[serde(rename = "@CWE_ID")]
-    pub cwe_id: String,
+    pub cwe_id: i64,
     #[serde(rename = "@View_ID")]
-    pub view_id: String,
+    pub view_id: i64,
     #[serde(rename = "@Chain_ID")]
-    pub chain_id: Option<String>,
+    pub chain_id: Option<i64>,
     #[serde(rename = "@Ordinal")]
     pub ordinal: Option<String>,
 }
@@ -172,7 +176,7 @@ pub struct RelatedAttackPatterns {
 #[serde(deny_unknown_fields)]
 pub struct RelatedAttackPattern {
     #[serde(rename = "@CAPEC_ID")]
-    pub caped_id: String,
+    pub caped_id: i64,
 }
 
 #[derive(Debug, Deserialize)]

@@ -11,7 +11,7 @@ pub struct Relationships {
 #[serde(rename = "Has_Member")]
 pub struct HasMember {
     #[serde(rename = "@CWE_ID")]
-    pub cwe_id: String,
+    pub cwe_id: i64,
     #[serde(rename = "@View_ID")]
-    pub view_id: String,
+    pub view_id: i64,
 }

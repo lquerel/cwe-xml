@@ -21,8 +21,12 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
         }
     };
 
-    let cwe_id: i64 = 1007;
-    println!("Weakness CWE-ID-{}\n{:#?}", cwe_id, cwes.weakness_by_cwe_id(cwe_id));
+    let cwe_id: i64 = 73;
+    let weakness = cwes.weakness_by_cwe_id(cwe_id);
+    println!("Weakness CWE-ID-{}\n{:#?}", cwe_id, weakness);
+    if let Some(weakness) = weakness {
+        println!("Categories {:#?}", weakness.categories);
+    }
 
     println!("{} weaknesses loaded", cwes.weakness_catalog.weaknesses.unwrap().weaknesses.len());
     println!("{} categories loaded", cwes.weakness_catalog.categories.unwrap().categories.len());

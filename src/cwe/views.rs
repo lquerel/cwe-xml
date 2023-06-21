@@ -1,3 +1,4 @@
+use std::rc::Rc;
 use serde::Deserialize;
 use crate::cwe::content_history::ContentHistory;
 use crate::cwe::notes::Notes;
@@ -8,14 +9,14 @@ use crate::cwe::structured_text::StructuredText;
 #[serde(deny_unknown_fields)]
 pub struct Views {
     #[serde(rename = "$value", default)]
-    pub views: Vec<View>,
+    pub views: Vec<Rc<View>>,
 }
 
 #[derive(Debug, Deserialize)]
 #[serde(deny_unknown_fields)]
 pub struct View {
     #[serde(rename = "@ID")]
-    pub id: String,
+    pub id: i64,
     #[serde(rename = "@Name")]
     pub name: String,
     #[serde(rename = "@Type")]
