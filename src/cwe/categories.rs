@@ -22,3 +22,9 @@ pub struct Category {
     #[serde(rename = "Relationships")]
     pub relationships: Relationships,
 }
+
+impl PartialEq for Category {
+    fn eq(&self, other: &Self) -> bool {
+        self.id == other.id
+    }
+}

@@ -4,25 +4,26 @@ use cwe_xml::cwe::CweDatabase;
 /// Download the CWE catalogs, parse them, build a global CweCatalog struct and print it.
 /// CWE files are zipped XML files.
 fn main() -> Result<(), Box<dyn std::error::Error>> {
-    let mut cwe_catalog = CweDatabase::new();
+    let mut cwe_db = CweDatabase::new();
 
     // Import the 3 main CWE catalogs from the official website.
-    cwe_catalog.import_weakness_catalog_from_str(&download_xml("https://cwe.mitre.org/data/xml/views/699.xml.zip")?)?;
-    cwe_catalog.import_weakness_catalog_from_str(&download_xml("https://cwe.mitre.org/data/xml/views/1000.xml.zip")?)?;
-    cwe_catalog.import_weakness_catalog_from_str(&download_xml("https://cwe.mitre.org/data/xml/views/1194.xml.zip")?)?;
+    cwe_db.import_weakness_catalog_from_str(&download_xml("https://cwe.mitre.org/data/xml/views/699.xml.zip")?)?;
+    cwe_db.import_weakness_catalog_from_str(&download_xml("https://cwe.mitre.org/data/xml/views/1000.xml.zip")?)?;
+    cwe_db.import_weakness_catalog_from_str(&download_xml("https://cwe.mitre.org/data/xml/views/1194.xml.zip")?)?;
 
     // Retrieve a weakness by its ID (CWE-73).
-    let cwe_id: i64 = 73;
-    let weakness = cwe_catalog.weakness_by_id(cwe_id);
+    let cwe_id: i64 = 306;
+    let weakness = cwe_db.weakness_by_cwe_id(cwe_id);
     println!("Weakness CWE-ID-{}\n{:#?}", cwe_id, weakness);
 
     // Display the categories of the weakness (if any).
-    if let Some(weakness) = weakness {
-        println!("Categories {:#?}", weakness.categories);
+    let categories = cwe_db.categories_by_cwe_id(cwe_id);
+    if let Some(categories) = categories {
+        println!("Categories {:#?}", categories);
     }
 
     // Display the CWE catalog summary.
-    println!("{}", cwe_catalog);
+    println!("{}", cwe_db);
 
     Ok(())
 }

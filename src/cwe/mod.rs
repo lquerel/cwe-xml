@@ -18,30 +18,28 @@ pub mod structured_text;
 pub mod weakness_catalog;
 
 /// A CWE weakness database.
-#[derive(Debug)]
+#[derive(Debug, Default)]
 pub struct CweDatabase {
     catalogs: HashMap<String, WeaknessCatalog>,
-    weakness_by_id: HashMap<i64, Rc<Weakness>>,
+    weakness_index: HashMap<i64, Rc<Weakness>>,
+    category_index: HashMap<i64, HashMap<i64, Rc<categories::Category>>>,
 }
 
 impl CweDatabase {
     /// Create a new empty CWE database.
     pub fn new() -> CweDatabase {
-        CweDatabase {
-            catalogs: HashMap::new(),
-            weakness_by_id: HashMap::new(),
-        }
+        CweDatabase::default()
     }
 
     /// Import a CWE catalog from a string containing the XML.
     pub fn import_weakness_catalog_from_str(&mut self, xml: &str) -> Result<(), Error> {
-        let mut weakness_catalog: WeaknessCatalog = quick_xml::de::from_str(xml).map_err(|e| Error::InvalidCweFile {
+        let weakness_catalog: WeaknessCatalog = quick_xml::de::from_str(xml).map_err(|e| Error::InvalidCweFile {
             file: "".to_string(),
             error: e.to_string(),
         })?;
         let catalog_name = weakness_catalog.name.clone();
-        CweDatabase::update_weakness_categories(&mut weakness_catalog);
-        self.build_cwe_id_to_weakness(&weakness_catalog);
+        self.update_category_index(&weakness_catalog);
+        self.update_weakness_index(&weakness_catalog);
         self.catalogs.insert(catalog_name, weakness_catalog);
         Ok(())
     }
@@ -53,58 +51,56 @@ impl CweDatabase {
             error: e.to_string(),
         })?;
         let reader = BufReader::new(file);
-        let mut weakness_catalog: WeaknessCatalog = quick_xml::de::from_reader(reader).map_err(|e| Error::InvalidCweFile {
+        let weakness_catalog: WeaknessCatalog = quick_xml::de::from_reader(reader).map_err(|e| Error::InvalidCweFile {
             file: xml_file.to_string(),
             error: e.to_string(),
         })?;
         let catalog_name = weakness_catalog.name.clone();
-        CweDatabase::update_weakness_categories(&mut weakness_catalog);
-        self.build_cwe_id_to_weakness(&weakness_catalog);
+        self.update_category_index(&weakness_catalog);
+        self.update_weakness_index(&weakness_catalog);
         self.catalogs.insert(catalog_name, weakness_catalog);
         Ok(())
     }
 
     /// Import a CWE catalog from a reader containing the XML.
     pub fn import_weakness_catalog_from_reader<R>(&mut self, reader: R) -> Result<(), Error> where R: BufRead {
-        let mut weakness_catalog: WeaknessCatalog = quick_xml::de::from_reader(reader).map_err(|e| Error::InvalidCweFile {
+        let weakness_catalog: WeaknessCatalog = quick_xml::de::from_reader(reader).map_err(|e| Error::InvalidCweFile {
             file: "".to_string(),
             error: e.to_string(),
         })?;
         let catalog_name = weakness_catalog.name.clone();
-        CweDatabase::update_weakness_categories(&mut weakness_catalog);
-        self.build_cwe_id_to_weakness(&weakness_catalog);
+        self.update_category_index(&weakness_catalog);
+        self.update_weakness_index(&weakness_catalog);
         self.catalogs.insert(catalog_name, weakness_catalog);
         Ok(())
     }
 
     /// Returns a reference to a Weakness struct if the CWE-ID exists in the catalog.
-    pub fn weakness_by_id(&self, cwe_id: i64) -> Option<Rc<Weakness>> {
-        self.weakness_by_id.get(&cwe_id).map(|weakness| weakness.clone())
+    pub fn weakness_by_cwe_id(&self, cwe_id: i64) -> Option<Rc<Weakness>> {
+        self.weakness_index.get(&cwe_id)
+            .map(|weakness| weakness.clone())
     }
 
-    fn build_cwe_id_to_weakness(&mut self, catalog: &WeaknessCatalog) {
+    /// Returns a list of categories for a given CWE-ID.
+    pub fn categories_by_cwe_id(&self, cwe_id: i64) -> Option<Vec<Rc<categories::Category>>> {
+        self.category_index.get(&cwe_id)
+            .map(|categories| categories.values().cloned().collect())
+    }
+
+    fn update_weakness_index(&mut self, catalog: &WeaknessCatalog) {
         if let Some(catalog) = &catalog.weaknesses {
             for weakness in catalog.weaknesses.iter() {
-                self.weakness_by_id.insert(weakness.id, weakness.clone());
+                self.weakness_index.insert(weakness.id, weakness.clone());
             }
         }
     }
 
-    fn update_weakness_categories(catalog: &mut WeaknessCatalog) {
-        let mut cwe_categories = HashMap::new();
-
+    fn update_category_index(&mut self, catalog: &WeaknessCatalog) {
         if let Some(categories) = &catalog.categories {
             for category in categories.categories.iter() {
                 for member in &category.relationships.has_members {
-                    cwe_categories.entry(member.cwe_id).or_insert_with(Vec::new).push(category.clone());
+                    self.category_index.entry(member.cwe_id).or_insert_with(HashMap::new).insert(category.id, category.clone());
                 }
-            }
-        }
-
-        for weakness in &mut catalog.weaknesses.as_mut().unwrap().weaknesses {
-            if let Some(categories) = cwe_categories.remove(&weakness.id) {
-                let w = Rc::get_mut(weakness).unwrap();
-                w.categories.replace(categories);
             }
         }
     }

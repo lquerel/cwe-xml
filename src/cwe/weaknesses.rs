@@ -1,6 +1,5 @@
 use std::rc::Rc;
 use serde::Deserialize;
-use crate::cwe::categories::Category;
 use crate::cwe::content_history::ContentHistory;
 use crate::cwe::notes::Notes;
 use crate::cwe::structured_text::{StructuredCode, StructuredText};
@@ -70,8 +69,6 @@ pub struct Weakness {
     pub taxonomy_mappings: Option<TaxonomyMappings>,
     #[serde(rename = "Notes")]
     pub notes: Option<Notes>,
-
-    pub categories: Option<Vec<Rc<Category>>>,
 }
 
 #[derive(Debug, Deserialize)]

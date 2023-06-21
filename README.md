@@ -9,8 +9,8 @@ XML files are available [here](https://cwe.mitre.org/data/downloads.html).
 ## Features
 
 * Import multiple CWE catalogs (XML format) into a single CWE database.
-* Query the database for CWEs by ID.
-* Retrieve the categories attached to a CWE.
+* Query the database for weakness by CWE-ID.
+* Query the database for categories by CWE-ID.
 
 ## Status 
 
