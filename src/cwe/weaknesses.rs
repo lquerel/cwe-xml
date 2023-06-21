@@ -4,7 +4,6 @@ use crate::cwe::categories::Category;
 use crate::cwe::content_history::ContentHistory;
 use crate::cwe::notes::Notes;
 use crate::cwe::structured_text::{StructuredCode, StructuredText};
-use crate::cwe::views::View;
 
 #[derive(Debug, Deserialize)]
 #[serde(deny_unknown_fields)]
