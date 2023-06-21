@@ -1,5 +1,5 @@
 use std::fs::File;
-use std::io::BufReader;
+use std::io::{BufRead, BufReader};
 use crate::cwe::weakness_catalog::WeaknessCatalog;
 use crate::errors::Error;
 
@@ -19,6 +19,14 @@ pub struct CweCatalog {
 }
 
 impl CweCatalog {
+    pub fn from_str(xml: &str) -> Result<CweCatalog, Error> {
+        let weakness_catalog: WeaknessCatalog = quick_xml::de::from_str(xml).map_err(|e| Error::InvalidCweFile {
+            file: "".to_string(),
+            error: e.to_string(),
+        })?;
+        Ok(CweCatalog { weakness_catalog })
+    }
+
     pub fn from_file(xml_file: &str) -> Result<CweCatalog, Error> {
         let file = File::open(xml_file).map_err(|e| Error::InvalidCweFile {
             file: xml_file.to_string(),
@@ -27,6 +35,14 @@ impl CweCatalog {
         let reader = BufReader::new(file);
         let weakness_catalog: WeaknessCatalog = quick_xml::de::from_reader(reader).map_err(|e| Error::InvalidCweFile {
             file: xml_file.to_string(),
+            error: e.to_string(),
+        })?;
+        Ok(CweCatalog { weakness_catalog })
+    }
+
+    pub fn from_reader<R>(reader: R) -> Result<CweCatalog, Error> where R: BufRead {
+        let weakness_catalog: WeaknessCatalog = quick_xml::de::from_reader(reader).map_err(|e| Error::InvalidCweFile {
+            file: "".to_string(),
             error: e.to_string(),
         })?;
         Ok(CweCatalog { weakness_catalog })
