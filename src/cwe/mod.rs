@@ -17,34 +17,36 @@ pub mod content_history;
 pub mod structured_text;
 pub mod weakness_catalog;
 
+/// A CWE weakness database.
 #[derive(Debug)]
-pub struct CweCatalog {
+pub struct CweDatabase {
     catalogs: HashMap<String, WeaknessCatalog>,
     weakness_by_id: HashMap<i64, Rc<Weakness>>,
 }
 
-impl CweCatalog {
-    pub fn new() -> CweCatalog {
-        CweCatalog {
+impl CweDatabase {
+    /// Create a new empty CWE database.
+    pub fn new() -> CweDatabase {
+        CweDatabase {
             catalogs: HashMap::new(),
             weakness_by_id: HashMap::new(),
         }
     }
 
-    /// Build a CweCatalog from an XML string containing the CWE catalog.
+    /// Import a CWE catalog from a string containing the XML.
     pub fn import_weakness_catalog_from_str(&mut self, xml: &str) -> Result<(), Error> {
         let mut weakness_catalog: WeaknessCatalog = quick_xml::de::from_str(xml).map_err(|e| Error::InvalidCweFile {
             file: "".to_string(),
             error: e.to_string(),
         })?;
         let catalog_name = weakness_catalog.name.clone();
-        CweCatalog::update_weakness_categories(&mut weakness_catalog);
+        CweDatabase::update_weakness_categories(&mut weakness_catalog);
         self.build_cwe_id_to_weakness(&weakness_catalog);
         self.catalogs.insert(catalog_name, weakness_catalog);
         Ok(())
     }
 
-    /// Build a CweCatalog from an XML file containing the CWE catalog.
+    /// Import a CWE catalog from a file containing the XML.
     pub fn import_weakness_catalog_from_file(&mut self, xml_file: &str) -> Result<(), Error> {
         let file = File::open(xml_file).map_err(|e| Error::InvalidCweFile {
             file: xml_file.to_string(),
@@ -56,20 +58,20 @@ impl CweCatalog {
             error: e.to_string(),
         })?;
         let catalog_name = weakness_catalog.name.clone();
-        CweCatalog::update_weakness_categories(&mut weakness_catalog);
+        CweDatabase::update_weakness_categories(&mut weakness_catalog);
         self.build_cwe_id_to_weakness(&weakness_catalog);
         self.catalogs.insert(catalog_name, weakness_catalog);
         Ok(())
     }
 
-    /// Build a CweCatalog from a BufRead containing the CWE catalog.
+    /// Import a CWE catalog from a reader containing the XML.
     pub fn import_weakness_catalog_from_reader<R>(&mut self, reader: R) -> Result<(), Error> where R: BufRead {
         let mut weakness_catalog: WeaknessCatalog = quick_xml::de::from_reader(reader).map_err(|e| Error::InvalidCweFile {
             file: "".to_string(),
             error: e.to_string(),
         })?;
         let catalog_name = weakness_catalog.name.clone();
-        CweCatalog::update_weakness_categories(&mut weakness_catalog);
+        CweDatabase::update_weakness_categories(&mut weakness_catalog);
         self.build_cwe_id_to_weakness(&weakness_catalog);
         self.catalogs.insert(catalog_name, weakness_catalog);
         Ok(())
@@ -108,7 +110,7 @@ impl CweCatalog {
     }
 }
 
-impl Display for CweCatalog {
+impl Display for CweDatabase {
     fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
         let mut text = String::new();
         for (catalog_name, catalog) in &self.catalogs {

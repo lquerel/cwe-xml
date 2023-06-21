@@ -1,10 +1,10 @@
 use std::io::Read;
-use cwe_xml::cwe::CweCatalog;
+use cwe_xml::cwe::CweDatabase;
 
 /// Download the CWE catalogs, parse them, build a global CweCatalog struct and print it.
 /// CWE files are zipped XML files.
 fn main() -> Result<(), Box<dyn std::error::Error>> {
-    let mut cwe_catalog = CweCatalog::new();
+    let mut cwe_catalog = CweDatabase::new();
 
     // Import the 3 main CWE catalogs from the official website.
     cwe_catalog.import_weakness_catalog_from_str(&download_xml("https://cwe.mitre.org/data/xml/views/699.xml.zip")?)?;
