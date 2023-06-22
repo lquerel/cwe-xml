@@ -1,5 +1,7 @@
 use std::io::Read;
-use cwe_xml::cwe::CweDatabase;
+use std::rc::Rc;
+use cwe_xml::cwe::{CweDatabase, WeaknessVisitor};
+use cwe_xml::cwe::weaknesses::Weakness;
 
 /// Download the CWE catalogs, parse them, build a global CweCatalog struct and print it.
 /// CWE files are zipped XML files.
@@ -22,10 +24,32 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
         println!("Categories {:#?}", categories);
     }
 
+    let children = cwe_db.weakness_children_by_cwe_id(1076);
+    if let Some(weaknesses) = children {
+        println!("CWE-{} has {} children", cwe_id, weaknesses.len());
+    }
+
+    println!("{} CWE roots", cwe_db.weakness_roots().len());
+    for root in &cwe_db.weakness_roots() {
+        println!("CWE-{} is a root '{}'", root.id, root.name);
+    }
+
+    let mut visitor = Visitor;
+
+    cwe_db.visit_weaknesses(&mut visitor);
+
     // Display the CWE catalog summary.
     println!("{}", cwe_db);
 
     Ok(())
+}
+
+struct Visitor;
+
+impl WeaknessVisitor for Visitor {
+    fn visit(&mut self, db: &CweDatabase, level: usize, weakness: Rc<Weakness>) {
+        println!("{} CWE-{} {} (subtree-size: {})", " ".repeat(level * 2), weakness.id, weakness.name, db.weakness_subtree_by_cwe_id(weakness.id).unwrap_or_default().len());
+    }
 }
 
 fn download_xml(file :&str) -> Result<String, Box<dyn std::error::Error>> {

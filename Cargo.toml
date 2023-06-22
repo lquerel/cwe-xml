@@ -1,11 +1,11 @@
 [package]
 name = "cwe-xml"
-version = "0.3.0"
+version = "0.4.0"
 authors = ["Laurent Querel <laurent.querel@gmail.com>"]
 edition = "2021"
 license = "Apache-2.0"
 description = """
-Rust mapping to CWE XML files from the MITRE project.
+A local in-memory, queryable, and navigable CWE database initialized with one or multiple CWE XML files.
 """
 homepage = "https://github.com/lquerel/cwe-xml"
 repository = "https://github.com/lquerel/cwe-xml"

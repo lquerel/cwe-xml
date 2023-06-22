@@ -1,10 +1,11 @@
-use std::collections::HashMap;
+use std::collections::{HashMap, HashSet};
 use std::fmt::{Display, Formatter};
 use std::fs::File;
 use std::io::{BufRead, BufReader};
 use std::rc::Rc;
+use crate::cwe::categories::Category;
 use crate::cwe::weakness_catalog::WeaknessCatalog;
-use crate::cwe::weaknesses::Weakness;
+use crate::cwe::weaknesses::{RelatedNature, Weakness};
 use crate::errors::Error;
 
 pub mod views;
@@ -22,7 +23,13 @@ pub mod weakness_catalog;
 pub struct CweDatabase {
     catalogs: HashMap<String, WeaknessCatalog>,
     weakness_index: HashMap<i64, Rc<Weakness>>,
-    category_index: HashMap<i64, HashMap<i64, Rc<categories::Category>>>,
+    category_index: HashMap<i64, HashMap<i64, Rc<Category>>>,
+    weakness_children_index: HashMap<i64, Vec<Rc<Weakness>>>,
+    weakness_roots_index: HashMap<i64, Rc<Weakness>>,
+}
+
+pub trait WeaknessVisitor {
+    fn visit(&mut self, db : &CweDatabase, level: usize, weakness: Rc<Weakness>);
 }
 
 impl CweDatabase {
@@ -38,8 +45,7 @@ impl CweDatabase {
             error: e.to_string(),
         })?;
         let catalog_name = weakness_catalog.name.clone();
-        self.update_category_index(&weakness_catalog);
-        self.update_weakness_index(&weakness_catalog);
+        self.update_indexes(&weakness_catalog);
         self.catalogs.insert(catalog_name, weakness_catalog);
         Ok(())
     }
@@ -56,8 +62,7 @@ impl CweDatabase {
             error: e.to_string(),
         })?;
         let catalog_name = weakness_catalog.name.clone();
-        self.update_category_index(&weakness_catalog);
-        self.update_weakness_index(&weakness_catalog);
+        self.update_indexes(&weakness_catalog);
         self.catalogs.insert(catalog_name, weakness_catalog);
         Ok(())
     }
@@ -69,8 +74,7 @@ impl CweDatabase {
             error: e.to_string(),
         })?;
         let catalog_name = weakness_catalog.name.clone();
-        self.update_category_index(&weakness_catalog);
-        self.update_weakness_index(&weakness_catalog);
+        self.update_indexes(&weakness_catalog);
         self.catalogs.insert(catalog_name, weakness_catalog);
         Ok(())
     }
@@ -87,10 +91,79 @@ impl CweDatabase {
             .map(|categories| categories.values().cloned().collect())
     }
 
+    /// Returns a list of weaknesses that are children of a given CWE-ID.
+    pub fn weakness_children_by_cwe_id(&self, cwe_id: i64) -> Option<Vec<Rc<Weakness>>> {
+        self.weakness_children_index.get(&cwe_id)
+            .map(|weaknesses| weaknesses.clone())
+    }
+
+    /// Returns a list of weaknesses that are children of a given CWE-ID.
+    /// The list does not contain the weakness for the given CWE-ID.
+    pub fn weakness_subtree_by_cwe_id(&self, cwe_id: i64) -> Option<Vec<Rc<Weakness>>> {
+        let mut visitor = CweIdSubTreeVisitor::default();
+
+        if let Some(weakness) = self.weakness_by_cwe_id(cwe_id) {
+            self.visit_weakness(&mut visitor, 0, &weakness);
+        }
+
+        if visitor.cwe_ids.is_empty() {
+            None
+        } else {
+            Some(visitor.cwe_ids.iter().map(|cwe_id| self.weakness_by_cwe_id(*cwe_id).expect("should never happen")).collect())
+        }
+    }
+
+    /// Returns a list of weaknesses that are roots, i.e. they have no parents.
+    pub fn weakness_roots(&self) -> Vec<Rc<Weakness>> {
+        self.weakness_roots_index.values().cloned().collect()
+    }
+
+    /// Visit all root weaknesses in the database and their children.
+    pub fn visit_weaknesses(&self, visitor: &mut impl WeaknessVisitor) {
+        for weakness in self.weakness_roots().iter() {
+            self.visit_weakness(visitor, 0, weakness);
+        }
+    }
+
+    fn visit_weakness(&self, visitor: &mut impl WeaknessVisitor, level: usize, weakness: &Rc<Weakness>) {
+        visitor.visit(self, level, weakness.clone());
+        if let Some(children) = self.weakness_children_by_cwe_id(weakness.id) {
+            for child in children.iter() {
+                self.visit_weakness(visitor, level + 1, child);
+            }
+        }
+    }
+
+    fn update_indexes(&mut self, catalog: &WeaknessCatalog) {
+        self.update_category_index(catalog);
+        self.update_weakness_index(catalog);
+        self.update_weakness_children_index(catalog);
+    }
+
     fn update_weakness_index(&mut self, catalog: &WeaknessCatalog) {
         if let Some(catalog) = &catalog.weaknesses {
             for weakness in catalog.weaknesses.iter() {
                 self.weakness_index.insert(weakness.id, weakness.clone());
+            }
+        }
+    }
+
+    fn update_weakness_children_index(&mut self, catalog: &WeaknessCatalog) {
+        if let Some(catalog) = &catalog.weaknesses {
+            for weakness in catalog.weaknesses.iter() {
+                let mut parent_count = 0;
+                if let Some(related_weaknesses) = &weakness.related_weaknesses {
+                    for related_weakness in &related_weaknesses.related_weaknesses {
+                        if related_weakness.nature == RelatedNature::ChildOf {
+                            self.weakness_children_index.entry(related_weakness.cwe_id).or_insert_with(Vec::new).push(weakness.clone());
+                            parent_count += 1;
+                        }
+                    }
+                }
+
+                if parent_count == 0 {
+                    self.weakness_roots_index.insert(weakness.id, weakness.clone());
+                }
             }
         }
     }
@@ -116,5 +189,18 @@ impl Display for CweDatabase {
             text.push_str(&format!("  #Weaknesses: {}\n", catalog.weaknesses.as_ref().unwrap().weaknesses.len()));
         }
         write!(f, "{}", text)
+    }
+}
+
+#[derive(Default)]
+struct CweIdSubTreeVisitor {
+    cwe_ids: HashSet<i64>,
+}
+
+impl WeaknessVisitor for CweIdSubTreeVisitor {
+    fn visit(&mut self, _: &CweDatabase, level: usize, weakness: Rc<Weakness>) {
+        if level > 0 {
+            self.cwe_ids.insert(weakness.id);
+        }
     }
 }

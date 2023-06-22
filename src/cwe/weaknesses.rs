@@ -1,5 +1,7 @@
 use std::rc::Rc;
+
 use serde::Deserialize;
+
 use crate::cwe::content_history::ContentHistory;
 use crate::cwe::notes::Notes;
 use crate::cwe::structured_text::{StructuredCode, StructuredText};
@@ -71,6 +73,20 @@ pub struct Weakness {
     pub notes: Option<Notes>,
 }
 
+#[derive(Debug, Deserialize, PartialEq)]
+#[serde(deny_unknown_fields)]
+pub enum RelatedNature {
+    ChildOf,
+    ParentOf,
+    StartsWith,
+    CanFollow,
+    CanPrecede,
+    RequiredBy,
+    Requires,
+    CanAlsoBe,
+    PeerOf,
+}
+
 #[derive(Debug, Deserialize)]
 #[serde(deny_unknown_fields)]
 pub struct WeaknessOrdinalities {
@@ -100,7 +116,7 @@ pub struct RelatedWeaknesses {
 #[serde(deny_unknown_fields)]
 pub struct RelatedWeakness {
     #[serde(rename = "@Nature")]
-    pub nature: String,
+    pub nature: RelatedNature,
     #[serde(rename = "@CWE_ID")]
     pub cwe_id: i64,
     #[serde(rename = "@View_ID")]
@@ -356,7 +372,7 @@ pub struct Introduction {
 #[derive(Debug, Deserialize)]
 #[serde(deny_unknown_fields)]
 pub struct BackgroundDetails {
-    #[serde(rename = "$value",default)]
+    #[serde(rename = "$value", default)]
     pub background_details: Vec<StructuredText>,
 }
 
