@@ -13,6 +13,7 @@ XML files are available [here](https://cwe.mitre.org/data/downloads.html).
 * Navigate CWE hierarchies and list CWE roots.
 * Query the database for weakness by CWE-ID.
 * Query the database for categories by CWE-ID.
+* Infer categories (i.e. weakness inherit categories of their parents).
 
 ## Status 
 

@@ -88,6 +88,22 @@ impl Hash for Weakness {
     }
 }
 
+impl Weakness {
+    /// Returns a vector of CWE IDs of weaknesses that are direct ancestors of this weakness.
+    /// In other word the current weakness is a child of the returned weaknesses.
+    pub fn direct_ancestors(&self) -> Vec<i64> {
+        let mut ancestors = Vec::new();
+        if let Some(related_weaknesses) = &self.related_weaknesses {
+            for related_weakness in &related_weaknesses.related_weaknesses {
+                if related_weakness.nature == RelatedNature::ChildOf {
+                    ancestors.push(related_weakness.cwe_id);
+                }
+            }
+        }
+        ancestors
+    }
+}
+
 #[derive(Debug, Deserialize, PartialEq)]
 #[serde(deny_unknown_fields)]
 pub enum RelatedNature {

@@ -23,7 +23,7 @@ pub mod weakness_catalog;
 pub struct CweDatabase {
     catalogs: HashMap<String, WeaknessCatalog>,
     weakness_index: HashMap<i64, Rc<Weakness>>,
-    category_index: HashMap<i64, HashMap<i64, Rc<Category>>>,
+    category_index: HashMap<i64 /*cwe-id*/, HashSet<Rc<Category>>>,
     weakness_children_index: HashMap<i64, HashSet<Rc<Weakness>>>,
     weakness_roots_index: HashMap<i64, Rc<Weakness>>,
 }
@@ -86,9 +86,9 @@ impl CweDatabase {
     }
 
     /// Returns a list of categories for a given CWE-ID.
-    pub fn categories_by_cwe_id(&self, cwe_id: i64) -> Option<Vec<Rc<categories::Category>>> {
+    pub fn categories_by_cwe_id(&self, cwe_id: i64) -> Option<HashSet<Rc<Category>>> {
         self.category_index.get(&cwe_id)
-            .map(|categories| categories.values().cloned().collect())
+            .map(|categories| categories.clone())
     }
 
     /// Returns a list of weaknesses that are children of a given CWE-ID.
@@ -122,6 +122,43 @@ impl CweDatabase {
     pub fn visit_weaknesses(&self, visitor: &mut impl WeaknessVisitor) {
         for weakness in self.weakness_roots().iter() {
             self.visit_weakness(visitor, 0, weakness);
+        }
+    }
+
+    /// Returns the direct weakness ancestors of a given CWE-ID.
+    pub fn direct_ancestors_by_cwe_id(&self, cwe_id: i64) -> HashSet<Rc<Weakness>> {
+        let mut ancestors = HashSet::new();
+        if let Some(weakness) = self.weakness_by_cwe_id(cwe_id) {
+            for ancestor_id in weakness.direct_ancestors() {
+                if let Some(ancestor) = self.weakness_by_cwe_id(ancestor_id) {
+                    ancestors.insert(ancestor);
+                }
+            }
+        }
+        ancestors
+    }
+
+    /// Infer the categories for all weaknesses in the database.
+    /// Sub-weakenesses inherit the categories of their parent weaknesses.
+    pub fn infer_categories(&mut self) {
+        let mut inferred_categories = HashMap::new();
+        let category_index = self.category_index.clone();
+        for (cwe_id, categories) in category_index.iter() {
+            self.propagate_categories_to_subtree(*cwe_id, categories.clone(), &mut inferred_categories);
+        }
+
+        for (cwe_id, categories) in inferred_categories {
+            self.category_index.entry(cwe_id).or_insert_with(HashSet::new).extend(categories.iter().cloned());
+        }
+    }
+
+    fn propagate_categories_to_subtree(&self, cwe_id: i64, categories: HashSet<Rc<Category>>, inferred_categories: &mut HashMap<i64, HashSet<Rc<Category>>>) {
+        inferred_categories.entry(cwe_id).or_insert_with(HashSet::new).extend(categories.iter().cloned());
+        let categories = inferred_categories.get(&cwe_id).expect("Should never happen").clone();
+
+        let children = self.weakness_children_by_cwe_id(cwe_id).unwrap_or_default();
+        for child in children.iter() {
+            self.propagate_categories_to_subtree(child.id, categories.clone(), inferred_categories);
         }
     }
 
@@ -172,7 +209,7 @@ impl CweDatabase {
         if let Some(categories) = &catalog.categories {
             for category in categories.categories.iter() {
                 for member in &category.relationships.has_members {
-                    self.category_index.entry(member.cwe_id).or_insert_with(HashMap::new).insert(category.id, category.clone());
+                    self.category_index.entry(member.cwe_id).or_insert_with(HashSet::new).insert(category.clone());
                 }
             }
         }

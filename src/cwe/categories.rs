@@ -1,3 +1,4 @@
+use std::hash::{Hash};
 use std::rc::Rc;
 use serde::Deserialize;
 use crate::cwe::relationships::Relationships;
@@ -26,5 +27,13 @@ pub struct Category {
 impl PartialEq for Category {
     fn eq(&self, other: &Self) -> bool {
         self.id == other.id
+    }
+}
+
+impl Eq for Category {}
+
+impl Hash for Category {
+    fn hash<H: std::hash::Hasher>(&self, state: &mut H) {
+        state.write_i64(self.id);
     }
 }

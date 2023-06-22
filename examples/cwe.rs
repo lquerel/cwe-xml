@@ -13,6 +13,8 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
     cwe_db.import_weakness_catalog_from_str(&download_xml("https://cwe.mitre.org/data/xml/views/1000.xml.zip")?)?;
     cwe_db.import_weakness_catalog_from_str(&download_xml("https://cwe.mitre.org/data/xml/views/1194.xml.zip")?)?;
 
+    cwe_db.infer_categories();
+
     // Retrieve a weakness by its ID (CWE-73).
     let cwe_id: i64 = 306;
     let weakness = cwe_db.weakness_by_cwe_id(cwe_id);
@@ -48,7 +50,15 @@ struct Visitor;
 
 impl WeaknessVisitor for Visitor {
     fn visit(&mut self, db: &CweDatabase, level: usize, weakness: Rc<Weakness>) {
-        println!("{} CWE-{} {} (subtree-size: {})", " ".repeat(level * 2), weakness.id, weakness.name, db.weakness_subtree_by_cwe_id(weakness.id).unwrap_or_default().len());
+        let cats = db.categories_by_cwe_id(weakness.id).unwrap_or_default().iter().map(|c| c.name.clone()).collect::<Vec<_>>();
+
+        println!("{} CWE-{} {} (subtree-size: {}, categories: {:?})",
+                 " ".repeat(level * 2),
+                 weakness.id,
+                 weakness.name,
+                 db.weakness_subtree_by_cwe_id(weakness.id).unwrap_or_default().len(),
+                 cats
+        );
     }
 }
 
