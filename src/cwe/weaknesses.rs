@@ -1,3 +1,4 @@
+use std::hash::{Hash, Hasher};
 use std::rc::Rc;
 
 use serde::Deserialize;
@@ -71,6 +72,20 @@ pub struct Weakness {
     pub taxonomy_mappings: Option<TaxonomyMappings>,
     #[serde(rename = "Notes")]
     pub notes: Option<Notes>,
+}
+
+impl PartialEq<Self> for Weakness {
+    fn eq(&self, other: &Self) -> bool {
+        self.id == other.id
+    }
+}
+
+impl Eq for Weakness {}
+
+impl Hash for Weakness {
+    fn hash<H: Hasher>(&self, state: &mut H) {
+        state.write_i64(self.id)
+    }
 }
 
 #[derive(Debug, Deserialize, PartialEq)]

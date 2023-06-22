@@ -24,7 +24,7 @@ pub struct CweDatabase {
     catalogs: HashMap<String, WeaknessCatalog>,
     weakness_index: HashMap<i64, Rc<Weakness>>,
     category_index: HashMap<i64, HashMap<i64, Rc<Category>>>,
-    weakness_children_index: HashMap<i64, Vec<Rc<Weakness>>>,
+    weakness_children_index: HashMap<i64, HashSet<Rc<Weakness>>>,
     weakness_roots_index: HashMap<i64, Rc<Weakness>>,
 }
 
@@ -92,7 +92,7 @@ impl CweDatabase {
     }
 
     /// Returns a list of weaknesses that are children of a given CWE-ID.
-    pub fn weakness_children_by_cwe_id(&self, cwe_id: i64) -> Option<Vec<Rc<Weakness>>> {
+    pub fn weakness_children_by_cwe_id(&self, cwe_id: i64) -> Option<HashSet<Rc<Weakness>>> {
         self.weakness_children_index.get(&cwe_id)
             .map(|weaknesses| weaknesses.clone())
     }
@@ -114,7 +114,7 @@ impl CweDatabase {
     }
 
     /// Returns a list of weaknesses that are roots, i.e. they have no parents.
-    pub fn weakness_roots(&self) -> Vec<Rc<Weakness>> {
+    pub fn weakness_roots(&self) -> HashSet<Rc<Weakness>> {
         self.weakness_roots_index.values().cloned().collect()
     }
 
@@ -155,7 +155,7 @@ impl CweDatabase {
                 if let Some(related_weaknesses) = &weakness.related_weaknesses {
                     for related_weakness in &related_weaknesses.related_weaknesses {
                         if related_weakness.nature == RelatedNature::ChildOf {
-                            self.weakness_children_index.entry(related_weakness.cwe_id).or_insert_with(Vec::new).push(weakness.clone());
+                            self.weakness_children_index.entry(related_weakness.cwe_id).or_insert_with(HashSet::new).insert(weakness.clone());
                             parent_count += 1;
                         }
                     }
