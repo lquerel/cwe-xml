@@ -1,5 +1,6 @@
 use std::io::Read;
 use std::rc::Rc;
+
 use cwe_xml::cwe::{CweDatabase, WeaknessVisitor};
 use cwe_xml::cwe::weaknesses::Weakness;
 
@@ -13,7 +14,8 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
     cwe_db.import_weakness_catalog_from_str(&download_xml("https://cwe.mitre.org/data/xml/views/1000.xml.zip")?)?;
     cwe_db.import_weakness_catalog_from_str(&download_xml("https://cwe.mitre.org/data/xml/views/1194.xml.zip")?)?;
 
-    cwe_db.infer_categories();
+    cwe_db.infer_categories_from_ancestors();
+    cwe_db.infer_categories_from_descendants();
 
     // Retrieve a weakness by its ID (CWE-73).
     let cwe_id: i64 = 306;
@@ -22,14 +24,10 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
 
     // Display the categories of the weakness (if any).
     let categories = cwe_db.categories_by_cwe_id(cwe_id);
-    if let Some(categories) = categories {
-        println!("Categories {:#?}", categories);
-    }
+    println!("Categories {:#?}", categories);
 
     let children = cwe_db.weakness_children_by_cwe_id(1076);
-    if let Some(weaknesses) = children {
-        println!("CWE-{} has {} children", cwe_id, weaknesses.len());
-    }
+    println!("CWE-{} has {} children", cwe_id, children.len());
 
     println!("{} CWE roots", cwe_db.weakness_roots().len());
     for root in &cwe_db.weakness_roots() {
@@ -50,19 +48,19 @@ struct Visitor;
 
 impl WeaknessVisitor for Visitor {
     fn visit(&mut self, db: &CweDatabase, level: usize, weakness: Rc<Weakness>) {
-        let cats = db.categories_by_cwe_id(weakness.id).unwrap_or_default().iter().map(|c| c.name.clone()).collect::<Vec<_>>();
+        let cats = db.categories_by_cwe_id(weakness.id).iter().map(|c| c.name.clone()).collect::<Vec<_>>();
 
         println!("{} CWE-{} {} (subtree-size: {}, categories: {:?})",
                  " ".repeat(level * 2),
                  weakness.id,
                  weakness.name,
-                 db.weakness_subtree_by_cwe_id(weakness.id).unwrap_or_default().len(),
+                 db.weakness_subtree_by_cwe_id(weakness.id).len(),
                  cats
         );
     }
 }
 
-fn download_xml(file :&str) -> Result<String, Box<dyn std::error::Error>> {
+fn download_xml(file: &str) -> Result<String, Box<dyn std::error::Error>> {
     let mut tmp_file = tempfile::tempfile()?;
     let mut xml = String::new();
 
