@@ -10,9 +10,9 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
     let mut cwe_db = CweDatabase::new();
 
     // Import the 3 main CWE catalogs from the official website.
-    cwe_db.import_weakness_catalog_from_str(&download_xml("https://cwe.mitre.org/data/xml/views/699.xml.zip")?)?;
-    cwe_db.import_weakness_catalog_from_str(&download_xml("https://cwe.mitre.org/data/xml/views/1000.xml.zip")?)?;
-    cwe_db.import_weakness_catalog_from_str(&download_xml("https://cwe.mitre.org/data/xml/views/1194.xml.zip")?)?;
+    cwe_db.import_weakness_catalog_from_url("https://cwe.mitre.org/data/xml/views/699.xml.zip")?;
+    cwe_db.import_weakness_catalog_from_url("https://cwe.mitre.org/data/xml/views/1000.xml.zip")?;
+    cwe_db.import_weakness_catalog_from_url("https://cwe.mitre.org/data/xml/views/1194.xml.zip")?;
 
     cwe_db.infer_categories_from_ancestors();
     cwe_db.infer_categories_from_descendants();
@@ -58,17 +58,4 @@ impl WeaknessVisitor for Visitor {
                  cats
         );
     }
-}
-
-fn download_xml(file: &str) -> Result<String, Box<dyn std::error::Error>> {
-    let mut tmp_file = tempfile::tempfile()?;
-    let mut xml = String::new();
-
-    reqwest::blocking::get(file)?
-        .copy_to(&mut tmp_file)?;
-    let mut zip_archive = zip::ZipArchive::new(tmp_file)?;
-    zip_archive
-        .by_index(0)?
-        .read_to_string(&mut xml)?;
-    Ok(xml)
 }

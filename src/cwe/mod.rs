@@ -2,7 +2,7 @@ use std::collections::{HashMap, HashSet};
 use std::collections::hash_map::Entry::{Occupied, Vacant};
 use std::fmt::{Display, Formatter};
 use std::fs::File;
-use std::io::{BufRead, BufReader};
+use std::io::{BufRead, BufReader, Read};
 use std::process::id;
 use std::rc::Rc;
 
@@ -51,6 +51,15 @@ impl CweDatabase {
         self.update_indexes(&weakness_catalog);
         self.catalogs.insert(catalog_name, weakness_catalog);
         Ok(())
+    }
+
+    /// Import a CWE catalog from an URL string containing the XML.
+    pub fn import_weakness_catalog_from_url(&mut self, url: &str) -> Result<(), Error> {
+        let xml_content = download_xml(url).map_err(|e| Error::InvalidCweFile {
+            file: url.to_string(),
+            error: e.to_string(),
+        })?;
+        self.import_weakness_catalog_from_str(&xml_content)
     }
 
     /// Import a CWE catalog from a file containing the XML.
@@ -312,4 +321,17 @@ impl WeaknessVisitor for CweIdSubTreeVisitor {
             self.cwe_ids.insert(weakness.id);
         }
     }
+}
+
+fn download_xml(file: &str) -> Result<String, Box<dyn std::error::Error>> {
+    let mut tmp_file = tempfile::tempfile()?;
+    let mut xml = String::new();
+
+    reqwest::blocking::get(file)?
+        .copy_to(&mut tmp_file)?;
+    let mut zip_archive = zip::ZipArchive::new(tmp_file)?;
+    zip_archive
+        .by_index(0)?
+        .read_to_string(&mut xml)?;
+    Ok(xml)
 }
