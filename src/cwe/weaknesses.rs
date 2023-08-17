@@ -72,6 +72,8 @@ pub struct Weakness {
     pub taxonomy_mappings: Option<TaxonomyMappings>,
     #[serde(rename = "Notes")]
     pub notes: Option<Notes>,
+    #[serde(rename = "Mapping_Notes")]
+    pub mapping_notes: Option<MappingNotes>,
 }
 
 impl PartialEq<Self> for Weakness {
@@ -156,6 +158,10 @@ pub struct RelatedWeakness {
     pub chain_id: Option<i64>,
     #[serde(rename = "@Ordinal")]
     pub ordinal: Option<String>,
+}
+
+#[derive(Debug, Deserialize)]
+pub struct MappingNotes {
 }
 
 #[derive(Debug, Deserialize)]

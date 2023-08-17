@@ -20,6 +20,8 @@ pub enum ContentHistoryChild {
     PreviousEntryName {
         #[serde(rename = "@Date")]
         date: String,
+        #[serde(rename = "@Version")]
+        version: Option<String>,
         #[serde(rename = "$value")]
         previous_entry_name: String,
     },
@@ -30,10 +32,14 @@ pub enum ContentHistoryChild {
 pub struct Submission {
     #[serde(rename = "Submission_Name")]
     pub submission_name: Option<String>,
+    #[serde(rename = "Submission_Version")]
+    pub submission_version: Option<String>,
     #[serde(rename = "Submission_Organization")]
     pub submission_organization: Option<String>,
     #[serde(rename = "Submission_Date")]
     pub submission_date: String,
+    #[serde(rename = "Submission_ReleaseDate")]
+    pub submission_release_date: String,
     #[serde(rename = "Submission_Comment")]
     pub submission_comment: Option<String>,
 }
@@ -43,10 +49,14 @@ pub struct Submission {
 pub struct Modification {
     #[serde(rename = "Modification_Name")]
     pub modification_name: Option<String>,
+    #[serde(rename = "Modification_Version")]
+    pub modification_version: Option<String>,
     #[serde(rename = "Modification_Organization")]
     pub modification_organization: Option<String>,
     #[serde(rename = "Modification_Date")]
     pub modification_date: String,
+    #[serde(rename = "Modification_ReleaseDate")]
+    pub modification_release_date: Option<String>,
     #[serde(rename = "Modification_Importance")]
     pub modification_importance: Option<String>,
     #[serde(rename = "Modification_Comment")]
@@ -60,6 +70,10 @@ pub struct Contribution {
     pub r#type: Option<String>,
     #[serde(rename = "Contribution_Name")]
     pub contribution_name: Option<String>,
+    #[serde(rename = "Contribution_Version")]
+    pub contribution_version: Option<String>,
+    #[serde(rename = "Contribution_ReleaseDate")]
+    pub contribution_release_date: Option<String>,
     #[serde(rename = "Contribution_Organization")]
     pub contribution_organization: Option<String>,
     #[serde(rename = "Contribution_Date")]

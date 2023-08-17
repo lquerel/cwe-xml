@@ -4,6 +4,7 @@ use crate::cwe::content_history::ContentHistory;
 use crate::cwe::notes::Notes;
 use crate::cwe::relationships::Relationships;
 use crate::cwe::structured_text::StructuredText;
+use crate::cwe::weaknesses::MappingNotes;
 
 #[derive(Debug, Deserialize)]
 #[serde(deny_unknown_fields)]
@@ -35,6 +36,8 @@ pub struct View {
     pub filter: Option<String>,
     #[serde(rename = "Content_History")]
     pub content_history: ContentHistory,
+    #[serde(rename = "Mapping_Notes")]
+    pub mapping_notes: Option<MappingNotes>,
 }
 
 #[derive(Debug, Deserialize)]
